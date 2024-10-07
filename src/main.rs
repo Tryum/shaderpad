@@ -1,6 +1,6 @@
 use std::{fs, time::Instant};
 
-use glium::{implement_vertex, Surface};
+use glium::{implement_vertex, uniform, Surface};
 use imgui::*;
 use imgui_glium_renderer::Renderer;
 use imgui_winit_support::{HiDpiMode, WinitPlatform};
@@ -17,12 +17,23 @@ struct Vertex {
 }
 implement_vertex!(Vertex, pos);
 
+#[derive(Copy, Clone)]
+struct Float3 {
+    pos: [f32; 3],
+}
+implement_vertex!(Float3, pos);
+
 fn draw(ui: &mut Ui, code: &mut String) {
     ui.window("code")
         .size([500.0, 500.0], Condition::FirstUseEver)
         .build(|| {
             ui.input_text_multiline("code", code, [-1.0, -1.0]).build();
         });
+}
+
+struct Float2 {
+    x: f32,
+    y: f32,
 }
 
 fn main() {
@@ -62,11 +73,13 @@ fn main() {
     let vertex3 = Vertex { pos: [0.5, -0.25] };
     let shape = vec![vertex1, vertex2, vertex3];
 
+    let mut i_resolution = Float3 {
+        pos: [1920.0, 1080.0, 1.0],
+    };
+
     let mut program =
         glium::Program::from_source(&display, &vertex_shader, &fragment_shader, None).unwrap();
-
-    let mut last_frame = Instant::now();
-
+    let first_frame = Instant::now();
     let mut last_frame = Instant::now();
     let mut run = true;
     event_loop
@@ -110,12 +123,19 @@ fn main() {
                         }
                     }
 
+                    let elapsed_time = (last_frame - first_frame).as_secs_f32();
+
+                    let uniforms = uniform! {
+                        iTime: elapsed_time,
+                        iResolution: i_resolution.pos
+                    };
+
                     target
                         .draw(
                             &vertex_buffer,
                             &indices,
                             &program,
-                            &glium::uniforms::EmptyUniforms,
+                            &uniforms,
                             &Default::default(),
                         )
                         .unwrap();
@@ -142,6 +162,9 @@ fn main() {
                         display.resize((new_size.width, new_size.height));
                     }
                     platform.handle_event(imgui.io_mut(), &window, &event);
+                    i_resolution = Float3 {
+                        pos: [new_size.width as f32, new_size.height as f32, 1.0],
+                    };
                 }
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
