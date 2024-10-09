@@ -71,9 +71,11 @@ fn main() {
         platform.attach_window(imgui.io_mut(), &window, dpi_mode);
     }
 
-    let vertex1 = Vertex { pos: [-0.5, -0.5] };
-    let vertex2 = Vertex { pos: [0.0, 0.5] };
-    let vertex3 = Vertex { pos: [0.5, -0.25] };
+    // Single triangle covering the whole rendering space
+    // https://stackoverflow.com/a/59739538/228634
+    let vertex1 = Vertex { pos: [-1.0, -1.0] };
+    let vertex2 = Vertex { pos: [3.0, -1.0] };
+    let vertex3 = Vertex { pos: [-1.0, 3.0] };
     let shape = vec![vertex1, vertex2, vertex3];
 
     let mut i_resolution = Float3 {
