@@ -25,6 +25,12 @@ struct Float3 {
 }
 implement_vertex!(Float3, pos);
 
+#[derive(Copy, Clone)]
+struct Float4 {
+    pos: [f32; 4],
+}
+implement_vertex!(Float4, pos);
+
 fn draw(ui: &mut Ui, code: &mut String) {
     ui.window("code")
         .size([500.0, 500.0], Condition::FirstUseEver)
@@ -105,6 +111,10 @@ fn main() {
         pos: [1920.0, 1080.0, 1.0],
     };
 
+    let mut i_mouse = Float4 {
+        pos: [0.0, 0.0, 0.0, 0.0],
+    };
+
     let full_frag_shader = format!("{}\n{}\n{}", fragment_head, fragment_shader, fragment_tail);
 
     let mut program =
@@ -125,6 +135,23 @@ fn main() {
                     ..
                 } => {
                     let ui = imgui.frame();
+
+                    if ui.is_mouse_clicked(MouseButton::Left) {
+                        i_mouse.pos[0] = ui.io().mouse_pos[0];
+                        i_mouse.pos[1] = i_resolution.pos[1] - ui.io().mouse_pos[1];
+                        i_mouse.pos[2] = ui.io().mouse_pos[0];
+                        i_mouse.pos[3] = i_resolution.pos[1] - ui.io().mouse_pos[1];
+                    } else {
+                        i_mouse.pos[3] = -f32::abs(i_mouse.pos[3]);
+                    }
+
+                    if ui.is_mouse_dragging(MouseButton::Left) {
+                        i_mouse.pos[0] = ui.io().mouse_pos[0];
+                        i_mouse.pos[1] = i_resolution.pos[1] - ui.io().mouse_pos[1];
+                        i_mouse.pos[2] = f32::abs(i_mouse.pos[2]);
+                    } else {
+                        i_mouse.pos[2] = -f32::abs(i_mouse.pos[2]);
+                    }
 
                     let run = true;
 
@@ -160,7 +187,8 @@ fn main() {
 
                     let uniforms = uniform! {
                         iTime: elapsed_time,
-                        iResolution: i_resolution.pos
+                        iResolution: i_resolution.pos,
+                        iMouse: i_mouse.pos
                     };
 
                     target
