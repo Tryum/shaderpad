@@ -1,5 +1,7 @@
 use std::{fs, time::Instant};
 
+use clipboard_rs::{Clipboard, ClipboardContext, ContentFormat};
+
 use glium::{implement_vertex, uniform, Surface};
 use imgui::*;
 use imgui_glium_renderer::Renderer;
@@ -31,9 +33,26 @@ fn draw(ui: &mut Ui, code: &mut String) {
         });
 }
 
-struct Float2 {
-    x: f32,
-    y: f32,
+pub struct ClipboardSupport(ClipboardContext);
+
+impl ClipboardSupport {
+    pub fn init() -> Option<ClipboardSupport> {
+        ClipboardContext::new().ok().map(ClipboardSupport)
+    }
+}
+
+impl ClipboardBackend for ClipboardSupport {
+    fn get(&mut self) -> Option<String> {
+        if self.0.has(ContentFormat::Text) {
+            Some(self.0.get_text().unwrap())
+        } else {
+            None
+        }
+    }
+
+    fn set(&mut self, value: &str) {
+        let _ = self.0.set_text(value.to_string());
+    }
 }
 
 fn main() {
@@ -45,6 +64,10 @@ fn main() {
 
     let mut imgui = Context::create();
     imgui.set_ini_filename(None);
+
+    if let Some(clipboard_support) = ClipboardSupport::init() {
+        imgui.set_clipboard_backend(clipboard_support);
+    }
 
     let event_loop = EventLoop::new().expect("Failed to create EventLoop");
 
