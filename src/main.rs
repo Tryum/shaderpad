@@ -111,11 +111,11 @@ fn main() {
         glium::Program::from_source(&display, &vertex_shader, &full_frag_shader, None).unwrap();
     let first_frame = Instant::now();
     let mut last_frame = Instant::now();
-    let mut run = true;
+    let mut _run = true;
     event_loop
         .run(move |event, window_target| {
             match event {
-                Event::NewEvents(start_cause) => {
+                Event::NewEvents(_start_cause) => {
                     let now = Instant::now();
                     imgui.io_mut().update_delta_time(now - last_frame);
                     last_frame = now;
@@ -126,7 +126,7 @@ fn main() {
                 } => {
                     let ui = imgui.frame();
 
-                    let mut run = true;
+                    let run = true;
 
                     draw(ui, &mut fragment_shader);
 
@@ -166,7 +166,7 @@ fn main() {
                     target
                         .draw(
                             &vertex_buffer,
-                            &indices,
+                            indices,
                             &program,
                             &uniforms,
                             &Default::default(),
