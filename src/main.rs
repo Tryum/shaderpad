@@ -37,8 +37,11 @@ struct Float2 {
 }
 
 fn main() {
-    let mut vertex_shader = fs::read_to_string("./vert.glsl").unwrap_or_default();
+    let vertex_shader = fs::read_to_string("./vert.glsl").unwrap_or_default();
+
+    let fragment_head = fs::read_to_string("./frag_head.glsl").unwrap_or_default();
     let mut fragment_shader = fs::read_to_string("./frag.glsl").unwrap_or_default();
+    let fragment_tail = fs::read_to_string("./frag_tail.glsl").unwrap_or_default();
 
     let mut imgui = Context::create();
     imgui.set_ini_filename(None);
@@ -77,8 +80,10 @@ fn main() {
         pos: [1920.0, 1080.0, 1.0],
     };
 
+    let full_frag_shader = format!("{}\n{}\n{}", fragment_head, fragment_shader, fragment_tail);
+
     let mut program =
-        glium::Program::from_source(&display, &vertex_shader, &fragment_shader, None).unwrap();
+        glium::Program::from_source(&display, &vertex_shader, &full_frag_shader, None).unwrap();
     let first_frame = Instant::now();
     let mut last_frame = Instant::now();
     let mut run = true;
@@ -111,10 +116,13 @@ fn main() {
                     let indices =
                         glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
+                    let full_frag_shader =
+                        format!("{}\n{}\n{}", fragment_head, fragment_shader, fragment_tail);
+
                     match glium::Program::from_source(
                         &display,
                         &vertex_shader,
-                        &fragment_shader,
+                        &full_frag_shader,
                         None,
                     ) {
                         Ok(new_program) => program = new_program,

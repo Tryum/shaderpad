@@ -1,12 +1,3 @@
-// From https://github.com/glium/glium/blob/master/examples/tutorial-02.rs
-
-#version 140
-
-out vec4 color;
-
-uniform float iTime;
-uniform vec3 iResolution;
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     // Normalized pixel coordinates (from 0 to 1)
@@ -18,8 +9,3 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // Output to screen
     fragColor = vec4(col,1.0);
 }
-
-void main() {
-    mainImage(color, gl_FragCoord.xy);
-}
-
